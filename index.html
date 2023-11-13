@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Game Registration</title>
+
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f9fa;
+            color: #495057;
+            margin: 20px;
+        }
+    
+        h2 {
+            color: #007bff;
+            margin-bottom: 20px;
+        }
+    
+        label {
+            display: block;
+            margin-top: 10px;
+            color: #007bff;
+        }
+    
+        input,
+        select,
+        button {
+            margin-bottom: 15px;
+        }
+    
+        button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+        }
+    
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+    
+        section {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+    
+        #showcharts {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+    
+        .chart-container {
+            margin-bottom: 15px;
+        }
+    
+        .chart-bar {
+            height: 20px;
+            margin-bottom: 5px;
+            background-color: #28a745;
+        }
+    
+        .chart-label {
+            margin-bottom: 5px;
+            color: #495057;
+        }
+    
+        #showallplayers,
+        #showpercentage {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+    </style>
+    
+</head>
+
+<body>
+
+    <!-- Player Information Section -->
+    <section id="playerInfo">
+        <h2>Player Information</h2>
+        <form id="playerForm" action="play.html" method="post" onsubmit="return Register();">
+            <!-- First Name -->
+            <label for="firstName">First Name:</label>
+            <input type="text" id="firstName" name="firstName" required minlength="3" pattern="[a-zA-Z]+" title="Please enter a valid name">
+
+            <!-- Last Name -->
+            <label for="lastName">Last Name:</label>
+            <input type="text" id="lastName" name="lastName" required minlength="3" pattern="[a-zA-Z]+" title="Please enter a valid name">
+
+            <!-- Date of Birth -->
+            <label for="dob">Date of Birth:</label>
+            <input type="date" id="dob" name="dob" required max="2011-01-01" min="2005-01-01" onchange="calculateAge()">
+
+            <!-- Age (disabled, calculated from Date of Birth) -->
+            <label for="age">Age:</label>
+            <input type="text" id="age" name="age" readonly>
+
+            <!-- Gender -->
+            <label for="gender">Select Gender:</label>
+            <select id="gender" name="gender" required>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+            </select>
+
+            <!-- Start Button (Task 4) -->
+            <button type="button" id="startBtn" onclick="StartGame()" disabled>Start Game</button>
+
+            <!-- Task 3: Register Button -->
+            <button type="submit" id="registerBtn">Register</button>
+
+            <!-- Task 5: End Button -->
+            <button type="button" id="endBtn" onclick="EndGame()">End</button>
+        </form>
+    </section>
+
+    <!-- Math Game Section -->
+    <section id="game" style="display:none;">
+        <h2>Math Game</h2>
+        <div id="equation"></div>
+        <label for="answer">Your Answer:</label>
+        <input type="number" id="answer" name="answer" required>
+        <button id="acceptBtn" onclick="CheckAnswer()">Accept</button>
+        <button id="nextBtn" onclick="DisplayQuestion()">Next</button>
+    </section>
+
+    <!-- Results Section -->
+    <div id="showpercentage">
+        <h2>Player Statistics</h2>
+    </div>
+
+    <!-- Display all players section -->
+    <div id="showallplayers">
+        <h2>All Players</h2>
+        <!-- List of all players will be dynamically added here -->
+    </div>
+
+    <!-- Add the showcharts div here -->
+    <div id="showcharts"></div>
+
+<script>
+    // Global storage entity
+    var PlayerRegistrationData = [];
+    var correctAnswer;
+    var totalQuestions = 0; // New global variable to track total questions
+
+    function StartGame() {
+        // Check if the player is registered
+        if (PlayerRegistrationData.length === 0) {
+            alert("Please register before starting the game.");
+            return;
+        }
+
+        document.getElementById("game").style.display = "block";
+        document.getElementById("answer").disabled = false;
+        document.getElementById("acceptBtn").disabled = false;
+        document.getElementById("nextBtn").disabled = false;
+
+        // Reset the total number of questions when starting a new game
+        totalQuestions = 0;
+
+        DisplayQuestion();
+    }
+
+    function PlayGame() {
+        var number1 = Math.floor(Math.random() * 9) + 1;
+        var number2 = Math.floor(Math.random() * 5) + 1;
+        correctAnswer = number1 + number2;
+        return { number1, number2 };
+    }
+
+    function DisplayQuestion() {
+        var { number1, number2 } = PlayGame();
+
+        var equation = number1 + " + " + number2 + " = ";
+        document.getElementById("equation").innerHTML = equation;
+        document.getElementById("answer").value = "";
+    }
+
+    function CheckAnswer() {
+    var playerAnswer = parseInt(document.getElementById("answer").value);
+    var isCorrect = playerAnswer === correctAnswer;
+
+    PlayerRegistrationData.push({
+        equation: document.getElementById("equation").innerText,
+        playerResponse: playerAnswer,
+        isCorrect: isCorrect
+    });
+
+    totalQuestions++; // Increment the total number of questions
+
+    if (isCorrect) {
+        alert("Correct!");
+    } else {
+        alert("Incorrect. The correct answer is: " + correctAnswer);
+    }
+
+    // Clear the equation display
+    document.getElementById("equation").innerHTML = "";
+
+    // Check if the game is over (for example, after a certain number of questions)
+    // If the game is over, update the player statistics
+    // For now, I'm assuming the game is over after 5 questions (you can adjust this number)
+    if (totalQuestions === 5) {
+        UpdatePlayerStatistics();
+        EndGame(); // You may want to call EndGame or perform other actions when the game is over
+        showAllStats(); // Call showAllStats at the end of the game
+    } else {
+        // If the game is not over, display the next question
+        DisplayQuestion();
+    }
+}
+
+    function UpdatePlayerStatistics() {
+        var showPercentage = document.getElementById("showpercentage");
+        showPercentage.innerHTML = "<h2>Player Statistics</h2>";
+
+        for (var i = 0; i < PlayerRegistrationData.length; i++) {
+            var playerStats = PlayerRegistrationData[i];
+            var resultText = "Equation: " + playerStats.equation + ", Player's Response: " + playerStats.playerResponse + ", Correct: " + playerStats.isCorrect;
+            showPercentage.innerHTML += "<p>" + resultText + "</p>";
+        }
+
+        findPercentageScore();
+    }
+
+    function findPercentageScore() {
+        var showPercentage = document.getElementById("showpercentage");
+        showPercentage.innerHTML = "<h2>Player Statistics</h2>";
+
+        var playerName = PlayerRegistrationData[0].firstName + " " + PlayerRegistrationData[0].lastName;
+
+        var currentDate = new Date().toLocaleDateString();
+
+        var correctAnswers = PlayerRegistrationData.filter(item => item.isCorrect).length;
+        var incorrectEquations = totalQuestions - correctAnswers;
+        var percentageScore = (correctAnswers / totalQuestions) * 100 || 0;
+
+        showPercentage.innerHTML += "<p>Player: " + playerName + "</p>";
+        showPercentage.innerHTML += "<p>Date: " + currentDate + "</p>";
+
+        showPercentage.innerHTML += "<p>Total Questions: " + totalQuestions + "</p>";
+        showPercentage.innerHTML += "<p>Correct Answers: " + correctAnswers + "</p>";
+        showPercentage.innerHTML += "<p>Incorrect Equations: " + incorrectEquations + "</p>";
+        showPercentage.innerHTML += "<p>Percentage Score: " + percentageScore.toFixed(2) + "%</p>";
+
+        // Display all players
+        DisplayAllPlayers();
+    }
+
+    function DisplayAllPlayers() {
+        var showAllPlayers = document.getElementById("showallplayers");
+        showAllPlayers.innerHTML = "<h2>All Players</h2>";
+
+        for (var i = 0; i < PlayerRegistrationData.length; i++) {
+            var player = PlayerRegistrationData[i];
+            var playerInfo = "Name: " + player.firstName + " " + player.lastName + ", Date of Birth: " + player.dob + ", Age: " + player.age + ", Gender: " + player.gender;
+            showAllPlayers.innerHTML += "<p>" + playerInfo + "</p>";
+        }
+    }
+
+    function Register() {
+        var firstName = document.getElementById("firstName").value;
+        var lastName = document.getElementById("lastName").value;
+        var dob = document.getElementById("dob").value;
+        var gender = document.getElementById("gender").value;
+
+        if (!firstName || !lastName || !dob || !gender) {
+            alert("Please fill in all the fields.");
+            return false;
+        }
+
+        var dobDate = new Date(dob);
+        var today = new Date();
+        var age = today.getFullYear() - dobDate.getFullYear();
+
+        if (today.getMonth() < dobDate.getMonth() || (today.getMonth() === dobDate.getMonth() && today.getDate() < dobDate.getDate())) {
+            age--;
+        }
+
+        var playerInfo = {
+            firstName: firstName,
+            lastName: lastName,
+            dob: dob,
+            age: age,
+            gender: gender,
+            questions: [] // New array to store player's questions
+        };
+
+        PlayerRegistrationData.push(playerInfo);
+
+        // Enable the "Start Game" button
+        document.getElementById("startBtn").disabled = false;
+
+        // Clear the form
+        document.getElementById("playerForm").reset();
+
+        return false; // Prevent form submission
+    }
+
+    function calculateAge() {
+        var dob = document.getElementById("dob").value;
+        var dobDate = new Date(dob);
+        var today = new Date();
+        var age = today.getFullYear() - dobDate.getFullYear();
+
+        if (today.getMonth() < dobDate.getMonth() || (today.getMonth() === dobDate.getMonth() && today.getDate() < dobDate.getDate())) {
+            age--;
+        }
+
+        document.getElementById("age").value = age;
+    }
+
+    function EndGame() {
+        // Disable game section
+        document.getElementById("game").style.display = "none";
+        document.getElementById("answer").disabled = true;
+        document.getElementById("acceptBtn").disabled = true;
+        document.getElementById("nextBtn").disabled = true;
+
+        // Clear and enable form
+        document.getElementById("playerForm").reset();
+        document.getElementById("firstName").disabled = false;
+        document.getElementById("lastName").disabled = false;
+        document.getElementById("dob").disabled = false;
+        document.getElementById("age").disabled = false;
+        document.getElementById("gender").disabled = false;
+        document.getElementById("registerBtn").disabled = false;
+        document.getElementById("startBtn").disabled = true; // Disable "Start Game" button
+
+        // Call findPercentageScore
+        findPercentageScore();
+    }
+
+    // Task 12: Show All Stats Function
+    function showAllStats() {
+        var showAllPlayers = document.getElementById("showallplayers");
+        showAllPlayers.innerHTML = "<h2>All Players</h2>";
+
+        for (var i = 0; i < PlayerRegistrationData.length; i++) {
+            var player = PlayerRegistrationData[i];
+            var playerInfo = "First Name: " + player.firstName + ", Last Name: " + player.lastName +
+                ", Age: " + player.age + "\n";
+
+            for (var j = 0; j < player.questions.length; j++) {
+                var questionInfo = "Question: " + player.questions[j].equation +
+                    ", Answer: " + player.questions[j].playerResponse +
+                    ", Status: " + (player.questions[j].isCorrect ? "Correct" : "Incorrect") + "\n";
+
+                playerInfo += questionInfo;
+            }
+
+            playerInfo += "Percentage Score: " + player.percentageScore.toFixed(2) + "%";
+
+            showAllPlayers.innerHTML += "<p>" + playerInfo + "</p>";
+        }
+    }
+
+   
+// Function to display charts
+function showCharts() {
+    // Check if PlayerRegistrationData is empty or undefined
+    if (!PlayerRegistrationData || PlayerRegistrationData.length === 0) {
+        console.error("PlayerRegistrationData is empty or undefined");
+        return;
+    }
+
+    // Count gender frequencies
+    var maleCount = PlayerRegistrationData.filter(player => player.gender === 'male').length;
+    var femaleCount = PlayerRegistrationData.filter(player => player.gender === 'female').length;
+    var totalPlayers = PlayerRegistrationData.length;
+
+    // Calculate gender percentages
+    var malePercentage = (maleCount / totalPlayers) * 100;
+    var femalePercentage = (femaleCount / totalPlayers) * 100;
+
+    // Count percentage score frequencies
+    var scoreRanges = [0, 0, 0, 0, 0, 0, 0]; // Array to count scores in ranges
+    PlayerRegistrationData.forEach(player => {
+        if (!player.questions) {
+            console.error("Player's questions array is undefined or empty");
+            return;
+        }
+
+        var correctAnswers = player.questions.filter(question => question.isCorrect).length;
+        var percentageScore = (correctAnswers / totalQuestions) * 100;
+
+        if (percentageScore < 50) {
+            scoreRanges[0]++;
+        } else if (percentageScore < 60) {
+            scoreRanges[1]++;
+        } else if (percentageScore < 70) {
+            scoreRanges[2]++;
+        } else if (percentageScore < 80) {
+            scoreRanges[3]++;
+        } else if (percentageScore < 90) {
+            scoreRanges[4]++;
+        } else if (percentageScore < 100) {
+            scoreRanges[5]++;
+        } else {
+            scoreRanges[6]++;
+        }
+    });
+
+    // Calculate percentage score range percentages
+    var scorePercentages = scoreRanges.map(count => (count / totalPlayers) * 100);
+
+    // Display gender chart
+    var genderChartHTML = "<h3>Gender Distribution</h3>";
+    genderChartHTML += "Male: <div style='width:" + malePercentage + "%; background-color: blue;'>&nbsp;</div> " + malePercentage.toFixed(2) + "%<br>";
+    genderChartHTML += "Female: <div style='width:" + femalePercentage + "%; background-color: pink;'>&nbsp;</div> " + femalePercentage.toFixed(2) + "%";
+
+    // Display percentage score range chart
+    var scoreChartHTML = "<h3>Percentage Score Distribution</h3>";
+    for (var i = 0; i < scoreRanges.length; i++) {
+        scoreChartHTML += (i * 10) + "-" + ((i + 1) * 10 - 1) + ": <div style='width:" + scorePercentages[i] + "%; background-color: green;'>&nbsp;</div> " + scorePercentages[i].toFixed(2) + "%<br>";
+    }
+
+    // Display the charts in the showcharts div
+    var showChartsDiv = document.getElementById("showcharts");
+    showChartsDiv.innerHTML = genderChartHTML + "<br>" + scoreChartHTML;
+}
+
+// Call showCharts every 5 seconds
+setInterval(showCharts, 5000);
+
+    
+
+</script>
+</body>
+</html>
